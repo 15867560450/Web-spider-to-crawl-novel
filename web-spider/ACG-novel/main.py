@@ -4,12 +4,22 @@ import lxml
 import os
 import re
 
+
 def crawler():
-    url = "https://trxs.cc"
-    r = requests.get(url)
-    r.encoding = r.apparent_coding
+    base_url = "https://trxs.cc"
+    r = requests.get(base_url)
+    r.encoding = r.apparent_encoding
     if r.status_code != 200:
         return 0
-    soup = BeautifulSoup(r.text,'lxml')
+    soup = BeautifulSoup(r.text, 'lxml')
     data = soup.select('.bk')
-    print(data)
+    for info in data:
+        print(info.h3.text)
+        print(base_url + info.a.attrs['href'])
+        print(info.p.text)
+        print()
+        
+    
+    
+if __name__ == "__main__":
+    crawler()
