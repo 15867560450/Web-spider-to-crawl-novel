@@ -17,7 +17,7 @@ def crawler(view_url):  # 获取搜索页面的json格式
     for info in data:
         result = {
             'title': info.h3.text,
-            'locate_url': base_url + info.a.attrs['href'],
+            'content_url': base_url + info.a.attrs['href'],
             'summary': info.p.text
         }
         book_list.append(result)
@@ -25,7 +25,26 @@ def crawler(view_url):  # 获取搜索页面的json格式
 
 
 def crawler_content(content_url):
-    return None
+    base_url = "https://trxs.cc"
+    url_list = []
+    r = requests.get(content_url)
+    r.encoding = r.apparent_encoding
+    if r.status_code != 200:
+        return None
+    soup = BeautifulSoup(r.text, 'lxml')
+    data = soup.select('ul.clearfix')[0]
+    demo = soup.find_all('li')
+    for i in demo:
+        url_list.append(base_url + i.a.attrs['href'])
+    for i in range(4):
+        url_list.pop(0)
+    content = {
+        'title': soup.h1.text,
+        'image': base_url + soup.img.attrs['src'],
+        'summary': soup.p.text,
+        'url': url_list
+    }
+    return content
 
 
 def crawler_page(page_url):
@@ -43,7 +62,10 @@ def crawler_page(page_url):
 
 
 if __name__ == '__main__':
-    page = crawler_page('https://trxs.cc/tongren/6994/1.html')
-    with open("test.txt", "w") as fp:
-        fp.write(page['title'])
-        fp.write(page['text'])
+    content = crawler_content('https://trxs.cc/tongren/6994.html')
+    for page_url in content['url']:
+        page = crawler_page(page_url=page_url)
+        with open("test.txt", "a+") as fp:
+            fp.write(page['title'])
+            fp.write(page['text'] + '\n')
+    print("爬取成功!")
